@@ -1,32 +1,51 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#initialize
+def _init_(nodeCount,edgeCount):
+    connectivity.nmap = {}
+    node_value.nvalue = [0] * nodeCount
+    
+
+def node_value(node1,node2):
+    node1 = int(node1)
+    node2 = int(node2)
+
+    node_value.nvalue[node1] += 1
+    node_value.nvalue[node2] += 1
+
+
+
+#method updates node connectivity, if the edge info is passed to it. 
+def connectivity(node1,node2):
+    node1 = int(node1)
+    node2 = int(node2)
+    if(node1 in connectivity.nmap):
+        connectivity.nmap[node1].append(node2)
+    else:
+        connectivity.nmap[node1] = [node2]
+    
+    if(node2 in connectivity.nmap):
+        connectivity.nmap[node2].append(node1)
+    else:
+        connectivity.nmap[node2] = [node1]
 
 def solveIt(inputData):
-    # Modify this code to run your optimization algorithm
-
-    # parse the input
+       
     lines = inputData.split('\n')
-
     firstLine = lines[0].split()
     nodeCount = int(firstLine[0])
     edgeCount = int(firstLine[1])
-
-    edges = []
+    
+    _init_(nodeCount,edgeCount)
+    
     for i in range(1, edgeCount + 1):
         line = lines[i]
         parts = line.split()
-        edges.append((int(parts[0]), int(parts[1])))
-
-    # build a trivial solution
-    # every node has its own color
-    solution = range(0, nodeCount)
-
-    # prepare the solution in the specified output format
-    outputData = str(nodeCount) + ' ' + str(0) + '\n'
-    outputData += ' '.join(map(str, solution))
-
-    return outputData
+        connectivity(parts[0],parts[1])
+        node_value(parts[0],parts[1])
+    
+    return node_value.nvalue
 
 
 import sys
