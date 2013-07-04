@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 
 #initialize
-def _init_(nodeCount,edgeCount):
+def _init_(node_count,edge_count):
     connectivity.nmap = {}
-    node_value.nvalue = [0] * nodeCount
-    
+    node_value.nlist = [0] * node_count
+    sorted_index.nindex = [0] * edge_count
 
 def node_value(node1,node2):
     node1 = int(node1)
     node2 = int(node2)
 
-    node_value.nvalue[node1] += 1
-    node_value.nvalue[node2] += 1
+    node_value.nlist[node1] += 1
+    node_value.nlist[node2] += 1
 
+def sorted_index(nlist):
+    sorted_index.nindex = sorted(range(len(nlist)), key=lambda k:nlist[k],reverse=True)
 
 
 #method updates node connectivity, if the edge info is passed to it. 
@@ -44,8 +46,14 @@ def solveIt(inputData):
         parts = line.split()
         connectivity(parts[0],parts[1])
         node_value(parts[0],parts[1])
+   
+    sorted_index(node_value.nlist)
     
-    return node_value.nvalue
+    print connectivity.nmap 
+    print node_value.nlist
+    print sorted_index.nindex
+    return ""
+    
 
 
 import sys
