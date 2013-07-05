@@ -51,6 +51,8 @@ def pick_color(index):
 def domain(index,color):
     connected = connectivity.nmap[index] 
     for item in connected:
+        node_value.nlist[item] += -1 
+
         if(item in domain.nono_color):
             domain.nono_color[item].add(color)
         else:
@@ -60,14 +62,25 @@ def domain(index,color):
 #Constraint progarmming Jargon, bascially the main loop. 
 def fixed_point_loop():
     
-    color_index = [-1] * len(sorted_index.nindex)
+    elements = len(node_value.nlist)
+    color_index = [-1] * len(node_value.nlist)
     
-    for element_index in sorted_index.nindex:
-       #Assign the color to the element
-       color = pick_color(element_index)
-       color_index[element_index] = color
-       #Recalculate the domain
-       domain(element_index,color)
+    for i in range(0,elements):
+                       
+        element_index  = max(enumerate(node_value.nlist), key= lambda x: x[1])[0]
+        #Assign the color to the element          
+        color = pick_color(element_index)
+        color_index[element_index] = color
+        #Recalculate the domain
+        domain(element_index,color)
+        node_value.nlist[element_index] = -1    
+        
+    #for domain(element_index,color)       element_index in sorted_index.nindex:
+    #   #Assign the color to the element
+    #   color = pick_color(element_index)
+    #   color_index[element_index] = color
+    #   #Recalculate the domain
+    #   domain(element_index,color)
         
     return color_index
 
