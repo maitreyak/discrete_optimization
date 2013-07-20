@@ -43,7 +43,7 @@ def nearestElement(node):
     global vistedMap
     #nearestElement.count= nearestElement.count+1
     #print nearestElement.count
-    k=2
+    k=10000
     itemRange = len(points)
 
     xMean = xlist[xmap[node]]
@@ -55,8 +55,8 @@ def nearestElement(node):
     y1 = yMean-1
     y2 = yMean+1
     
-    xpoints = [] 
-    ypoints = [] 
+    xpoints = {} 
+    ypoints = {} 
 
     candidates= [] 
 
@@ -66,24 +66,37 @@ def nearestElement(node):
             break
         if x1 >= 0:
             if not (xlist[x1] in visitedMap):
-                xpoints.append(xlist[x1])
-        x1-=1
+                xpoints[xlist[x1]] = True
         if x2 <itemRange:
             if not (xlist[x2] in visitedMap):        
-                xpoints.append(xlist[x2])
-        x2+=1
+                xpoints[xlist[x2]] = True
         
         if y1 >= 0:
             if not (ylist[y1] in visitedMap):    
-                ypoints.append(ylist[y1])
-        y1-=1
+                ypoints[ylist[y1]] = True
         if y2 <itemRange:
             if not (ylist[y2] in visitedMap):
-                ypoints.append(ylist[y2])
-        y2+=1
+                ypoints[ylist[y2]] = True
        
-        candidates = set(xpoints).intersection(set(ypoints))
-    
+       # candidates = set(xpoints).intersection(set(ypoints))
+        if x1 >=0 and xlist[x1] in ypoints:
+            candidates.append(xlist[x1])
+           
+        if x2<itemRange and xlist[x2] in ypoints:
+            candidates.append(xlist[x2])
+           
+        if y1 >=0 and ylist[y1] in xpoints:
+            candidates.append(ylist[y1])
+
+        if y2<itemRange and ylist[y2] in xpoints:
+            candidates.append(ylist[y2])
+        
+        x1-=1
+        x2+=1
+        y1-=1
+        y2+=1
+
+
     if len(candidates) > 0:
         return min (candidates,key = lambda x:approxLength(x,node))
     else:
