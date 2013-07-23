@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import math
-
+import random
 points = [] 
 visited = []
 visitedMap = {}
@@ -46,44 +46,90 @@ def intersectEdge(edgeIndex):
     global edges
     global xmap
     global ymap
+    edgeList = [] 
     
     mainRangeX , mainRangeY = makeRange(edgeIndex)
 
     for index in range(0,len(edges)):
         if index != edgeIndex:
              rangeX,rangeY= makeRange(index)
+        else:
+            continue
+        if index == edgeIndex+1 or index == edgeIndex-1:
+            continue
              
         if (mainRangeX[0]< rangeX[0] < mainRangeX[1]) or (mainRangeX[0]< rangeX[1] < mainRangeX[1]):
             if (mainRangeY[0]< rangeY[0] < mainRangeY[1]) or (mainRangeY[0]< rangeY[1] < mainRangeY[1]):
-                    return index
+                edgeList.append(index)
             if (rangeY[0]< mainRangeY[0] < rangeY[1]) or (rangeY[0]< mainRangeY[1] < rangeY[1]):
-                    return index
+                edgeList.append(index)
 
         if (rangeX[0]< mainRangeX[0] < rangeX[1]) or (rangeX[0]< mainRangeX[1] < rangeX[1]):
             if (mainRangeY[0]< rangeY[0] < mainRangeY[1]) or (mainRangeY[0]< rangeY[1] < mainRangeY[1]):
-                    return index
+                edgeList.append(index)
+
             if (rangeY[0]< mainRangeY[0] < rangeY[1]) or (rangeY[0]< mainRangeY[1] < rangeY[1]):
-                    return index
+                edgeList.append(index)
 
-    return -1
+    
+    if len(edgeList) == 0:
+        return -1
+    else:
+        #return min(edgeList,key = lambda index: approxLength(edges[index][0],edges[index][1]))
+        return edgeList[random.randint(0,len(edgeList)-1)]
+        
+def rankEdge(edge1,edge2):
+    if visitedMap[edges[edge1][0]] < visitedMap[edges[edge2][0]]:
+        return edge1 , edge2
+    else:
+        return edge2, edge1
 
 
+def twoOptSwap(edge1,edge2):
+    global edges
+    global visited
+    global vistedMap
+    itemRange = len(visited)
+    if(edge2 >=0):
+        edge1,edge2 = rankEdge(edge1,edge2)    
+        index1 = visitedMap[edges[edge1][1]]
+        index2 = visitedMap[edges[edge2][0]]
+        while index1< index2:
+            temp = visited[index1]
+            visited[index1] = visited[index2]
+            visited[index2] = temp
+            index1+=1
+            index2-=1
+        
+        for index in range(0,itemRange):
+            visitedMap[visited[index]] = index
+
+        
+        edges = [] 
+       
+        
+        for index in range(0,itemRange):
+            
+            if(index+1 == itemRange):
+                edges.append([visited[index],visited[0]])
+            else:
+                edges.append([visited[index],visited[index+1]])
+
+        
 def twoOpt():
-    global edges   
+    global edges
+    global visited
+    
+    
     edge1 = getLongEdge()
     edge2 = intersectEdge(edge1)
-
-    while(edge2 > 0):
-        swpPoint = edges[edge1][1]
-        edges[edge1][1] = edges[edge2][0]
-        edges[edge2][0] = swpPoint
-        print edges[edge1] 
-        print edges[edge2]
+    
+    while edge2 >=0 :
+        twoOptSwap(edge1,edge2)
         edge1 = getLongEdge()
         edge2 = intersectEdge(edge1)
-    print edges
-
-
+        
+    
         
 #Helper method of actual distance calulation 
 def length(point1, point2):
@@ -173,6 +219,17 @@ def nearestElement(node):
     else:
         return -1    
 
+def calulatePath():
+    itemRange = len(visited)
+    actualLenght = 0.0 
+    for index in range(0,itemRange):  
+        if index+1 == itemRange:
+            actualLenght += length(points[visited[index]],points[visited[0]])
+        else:
+            actualLenght += length(points[visited[index]],points[visited[index+1]])
+    
+    return actualLenght
+           
 
 #Greedy algo for the tsp graph
 def greedyTsp():
@@ -186,7 +243,7 @@ def greedyTsp():
     
     while(noCircuit):
         visited.append(node)
-        visitedMap[node] =True
+        visitedMap[node] = len(visited)-1
 
         nextNode =  nearestElement(node)
         
@@ -200,7 +257,7 @@ def greedyTsp():
             edges.append([node,nextNode])
             node = nextNode
     
-    return actualLenght    
+    return actualLenght
 
 
 def solveIt(inputData):
@@ -215,13 +272,12 @@ def solveIt(inputData):
 
     nearestElementPrereqs()
     #build tsp solution using greedy approach
-    actualLenght = greedyTsp()
-    #output = str(actualLenght)+" 0\n"
-    #output+= " ".join(map(str,visited))
-    #output+="\n"
-    #return output
+    greedyTsp()
     twoOpt()
-    return ""
+    output = str(calulatePath())+" 0\n"
+    output+= " ".join(map(str,visited))
+    output+="\n"
+    return output
 
 
 import sys
