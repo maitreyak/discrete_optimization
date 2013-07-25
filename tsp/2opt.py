@@ -3,6 +3,8 @@
 
 import math
 import random
+import copy
+
 points = [] 
 visited = []
 visitedMap = {}
@@ -11,12 +13,34 @@ ylist =[]
 xmap = {}
 ymap = {}
 edges = []
-
+minPathLenght = 0.0 
+sortedEdges = []
+edgePointer = 0
 #Methods the work on edges
+def resortEdges():
+    global edges
+    global edgePointer
+    global sortedEdges 
+    itemRange = len(edges)
+    sortedEdges = sorted(range(itemRange),key = lambda index: approxLength(edges[index][0],edges[index][1]),reverse=True)
+    edgePointer = 0
+
+def getEdge():
+    global edgePointer
+    if edgePointer >=len(edges):
+        edgePointer = 0        
+    
+    edge = sortedEdges[edgePointer]
+    edgePointer+=1
+    return edge
+
+
 def getLongEdge():
     global edges
     itemRange = len(edges)
-    return max(range(itemRange),key = lambda index: approxLength(edges[index][0],edges[index][1]))
+    return sorted(range(itemRange),key = lambda index: approxLength(edges[index][0],edges[index][1]))
+
+
 
 def makeRange(edge):
     global edges
@@ -42,7 +66,7 @@ def makeRange(edge):
     
     return rangeX,rangeY
 
-def intersectEdge(edgeIndex):
+def intersectCount(edgeIndex):
     global edges
     global xmap
     global ymap
@@ -71,13 +95,25 @@ def intersectEdge(edgeIndex):
             if (rangeY[0]< mainRangeY[0] < rangeY[1]) or (rangeY[0]< mainRangeY[1] < rangeY[1]):
                 edgeList.append(index)
 
-    
+    return edgeList
+    #if len(edgeList) == 0:
+    #    return -1
+    #else:
+        #return min(edgeList,key = lambda index: approxLength(edges[index][0],edges[index][1]))
+    #    return edgeList[random.randint(0,len(edgeList)-1)]
+
+def intersectEdge(edgeIndex):
+    edgeList= intersectCount(edgeIndex)
     if len(edgeList) == 0:
         return -1
     else:
-        #return min(edgeList,key = lambda index: approxLength(edges[index][0],edges[index][1]))
         return edgeList[random.randint(0,len(edgeList)-1)]
-        
+        #return max(edgeList,key = lambda edge: len(intersectCount(edge)))
+
+    
+
+
+
 def rankEdge(edge1,edge2):
     if visitedMap[edges[edge1][0]] < visitedMap[edges[edge2][0]]:
         return edge1 , edge2
@@ -89,47 +125,59 @@ def twoOptSwap(edge1,edge2):
     global edges
     global visited
     global vistedMap
+    
+    revertLocal = visited[:]
+    
     itemRange = len(visited)
-    if(edge2 >=0):
-        edge1,edge2 = rankEdge(edge1,edge2)    
-        index1 = visitedMap[edges[edge1][1]]
-        index2 = visitedMap[edges[edge2][0]]
-        while index1< index2:
-            temp = visited[index1]
-            visited[index1] = visited[index2]
-            visited[index2] = temp
-            index1+=1
-            index2-=1
+
+    edge1,edge2 = rankEdge(edge1,edge2)    
+    index1 = visitedMap[edges[edge1][1]]
+    index2 = visitedMap[edges[edge2][0]]
+    while index1< index2:
+        temp = visited[index1]
+        visited[index1] = visited[index2]
+        visited[index2] = temp
+        index1+=1
+        index2-=1
         
-        for index in range(0,itemRange):
-            visitedMap[visited[index]] = index
+    currentPathValue = calculatePath()
+        
+    if(currentPathValue >= minPathLenght):
+        visited = revertLocal
+        return False
+                    
+    for index in range(0,itemRange):
+        visitedMap[visited[index]] = index
 
         
-        edges = [] 
+    edges = [] 
        
         
-        for index in range(0,itemRange):
+    for index in range(0,itemRange):
             
-            if(index+1 == itemRange):
-                edges.append([visited[index],visited[0]])
-            else:
-                edges.append([visited[index],visited[index+1]])
+        if(index+1 == itemRange):
+            edges.append([visited[index],visited[0]])
+        else:
+            edges.append([visited[index],visited[index+1]])
+
+    resortEdges()
+    return True
 
         
 def twoOpt():
     global edges
     global visited
+    count = 3000
     
+    edge1 = getEdge()
     
-    edge1 = getLongEdge()
-    edge2 = intersectEdge(edge1)
-    
-    while edge2 >=0 :
-        twoOptSwap(edge1,edge2)
-        edge1 = getLongEdge()
-        edge2 = intersectEdge(edge1)
+    while count > 0:
+        edge2 = intersectEdge(edge1)        
+        if edge2 >= 0:    
+            twoOptSwap(edge1,edge2)
+        edge1 = getEdge()
+        count-=1
         
-    
         
 #Helper method of actual distance calulation 
 def length(point1, point2):
@@ -219,7 +267,7 @@ def nearestElement(node):
     else:
         return -1    
 
-def calulatePath():
+def calculatePath():
     itemRange = len(visited)
     actualLenght = 0.0 
     for index in range(0,itemRange):  
@@ -261,7 +309,8 @@ def greedyTsp():
 
 
 def solveIt(inputData):
-    global points  
+    global points
+    global minPathLenght
     lines = inputData.split('\n')
     nodeCount = int(lines[0])
 
@@ -273,8 +322,10 @@ def solveIt(inputData):
     nearestElementPrereqs()
     #build tsp solution using greedy approach
     greedyTsp()
+    minPathLenght = calculatePath()
+    resortEdges()
     twoOpt()
-    output = str(calulatePath())+" 0\n"
+    output = str(calculatePath())+" 0\n"
     output+= " ".join(map(str,visited))
     output+="\n"
     return output
