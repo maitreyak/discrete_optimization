@@ -23,7 +23,7 @@ def resortEdges():
     global sortedEdges 
     itemRange = len(edges)
     sortedEdges = sorted(range(itemRange),key = lambda index: approxLength(edges[index][0],edges[index][1]),reverse=True)
-    edgePointer = 0
+    #edgePointer = 0
 
 def getEdge():
     global edgePointer
@@ -107,11 +107,10 @@ def intersectEdge(edgeIndex):
     if len(edgeList) == 0:
         return -1
     else:
-        return edgeList[random.randint(0,len(edgeList)-1)]
-        #return max(edgeList,key = lambda edge: len(intersectCount(edge)))
-
+        #randomVal = edgeList[random.randint(0,len(edgeList)-1)]
+        actualval = pickEdge2(edgeIndex,edgeList)
+        return actualval
     
-
 
 
 def rankEdge(edge1,edge2):
@@ -120,6 +119,32 @@ def rankEdge(edge1,edge2):
     else:
         return edge2, edge1
 
+def pickEdge2(edge1,edgeList):
+    global edges
+    global visited
+    global vistedMap
+    
+    revertLocal = visited[:]
+    
+    itemRange = len(visited)
+    edge2Values = []  
+    for edge2 in edgeList:
+    
+        edge1,edge2 = rankEdge(edge1,edge2)    
+        index1 = visitedMap[edges[edge1][1]]
+        index2 = visitedMap[edges[edge2][0]]
+        while index1< index2:
+            temp = visited[index1]
+            visited[index1] = visited[index2]
+            visited[index2] = temp
+            index1+=1
+            index2-=1
+                  
+        edge2Values.append(calculatePath())
+        visited = revertLocal[:]
+    
+    returnEdge= min(range(len(edge2Values)),key = lambda index:edge2Values[index])
+    return edgeList[returnEdge]
 
 def twoOptSwap(edge1,edge2):
     global edges
@@ -160,14 +185,14 @@ def twoOptSwap(edge1,edge2):
         else:
             edges.append([visited[index],visited[index+1]])
 
-    resortEdges()
+    #resortEdges()
     return True
 
         
 def twoOpt():
     global edges
     global visited
-    count = 3000
+    count = 2000
     
     edge1 = getEdge()
     
