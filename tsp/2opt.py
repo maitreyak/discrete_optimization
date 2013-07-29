@@ -192,7 +192,7 @@ def twoOptSwap(edge1,edge2):
 def twoOpt():
     global edges
     global visited
-    count = 2000
+    count = 40000
     
     edge1 = getEdge()
     
