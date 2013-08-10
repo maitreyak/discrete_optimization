@@ -43,7 +43,8 @@ def pickWarehouse(customer):
 
 def greedy():
     
-    for index in range(0,customerCount):
+    demandList = sorted(range(0,customerCount),key = lambda index:customerSizes[index],reverse = True)
+    for index in demandList:
         pickWarehouse(index)        
  
 
@@ -56,6 +57,7 @@ def calculate():
     return objectValue
 
 def formatList():
+    #print wCapacity
     returnList = [0] * customerCount
     for warehouse, custList in wcMap.items():
         for cust in custList:
@@ -103,7 +105,6 @@ def solveIt(inputData):
     greedy()
     output = str(calculate())+" 0\n"
     output+= " ".join(map(str,formatList()))
-    output+="\n"
     return output
 
 import sys
