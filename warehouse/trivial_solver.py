@@ -1,5 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import copy
+from collections import deque
 warehouseCount = 0
 customerCount = 0
 warehouses = []
@@ -13,20 +15,35 @@ openMap = {}
 custMap ={}
 sortedDistance = []
 custAssoCount = 0
+sortedTotalCost = [] 
+minVal = 1000000000.0
+minWc = []
+
+def sortCustomerCosts():
+    global sortedCosts
+    for i in range(0,customerCount):
+        sortedCosts.append(sorted(range(0,warehouseCount),key = lambda index: customerCosts[i][index]))
+
+
+def sortTotalCost():
+    global sortedTotalCost 
+    for i in range(0,warehouseCount):
+        cost = 0.0
+        for j in range(0,customerCount):
+            cost = cost + customerCosts[j][i]
+        cost += warehouses[i][1]
+        sortedTotalCost.append(cost)
 
 
 def sortWarehousetoCust():
     global sortedDistance
     for i in range(0,warehouseCount):
         sortedDistance.append(sorted(range(0,customerCount),key = lambda index: customerCosts[index][i]))
-    
-   # print sortedDistance 
-
 
 def pickWarehouse(customer):
-    global openMap
     global wCapacity
     global wcMap
+    
     costList = sortedCosts[customer]
 
     for warehouse in costList:
@@ -40,19 +57,52 @@ def pickWarehouse(customer):
             if warehouse in wcMap: 
                 wcMap[warehouse].append(customer)
             else:
-                 wcMap[warehouse] = [customer]
+                wcMap[warehouse] = [customer]
             
             wCapacity[warehouse] -= customerSizes[customer]
-            return
+            return True
+    
+    return False
 
     
 def greedy():
-    demandList = sorted(range(0,warehouseCount),key = lambda index:warehouses[index][1]/warehouses[index][0])
-    for index in demandList:
-        if custAssoCount >= customerCount:
-            break
-        pickCustomers(index,3)        
+    global sortedTotalCost
+    global wCapacity
+    global wcMap
+    global minVal
+    global minWc
+    global openMap
+    
+    sortCustomerCosts()
+    sortTotalCost()
+   
+    demandList = sorted(range(0,warehouseCount),key = lambda index:sortedTotalCost[index])
+    
+    revertCapacity = list(wCapacity)     
+    for i in range(0,warehouseCount): 
+        for index in range(0,warehouseCount/3):        
+            openMap[demandList[index]] = True       
+            for customer in range(0,customerCount):
+                pickWarehouse(customer)
+            
+            tempVal= calculate()
+            if(tempVal< minVal):
+                minVal=tempVal
+                minWc = copy.deepcopy(wcMap)
+            
+            wCapacity = list(revertCapacity)
+            wcMap = {}
+        
+        for x in range(0,warehouseCount):
+            openMap[x]= False
+        
+        queue= deque(demandList)   
+        element = queue.popleft()
+        queue.append(element)
+        demandList = list(queue)
 
+    wcMap = minWc
+        
 def pickCustomers(warehouse,fraction):
     
     global openMap
@@ -124,6 +174,7 @@ def solveIt(inputData):
         warehouses.append((int(parts[0]), float(parts[1])))
         wCapacity.append(int(parts[0]))
         wCost.append(float(parts[1]))
+        openMap[i-1] = False
 
     customerSizes = []
     customerCosts = []
