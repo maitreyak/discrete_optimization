@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import copy
 from collections import deque
+from random import randint
 warehouseCount = 0
 customerCount = 0
 warehouses = []
@@ -103,6 +104,59 @@ def greedy():
 
     wcMap = minWc
         
+def openCloseLoop():
+    global openMap
+    global wcMap
+    global wCapacity
+    global minVal
+    global minWc
+
+    openList = []
+    closeList = []
+    
+    for w in range(0,warehouseCount):
+        if w in wcMap:
+            openList.append(w)
+            openMap[w] = True 
+        else:
+            closeList.append(w)
+            openMap[w] = False 
+    for index in range(0,10000):    
+        revOpenList  = copy.deepcopy(openList)
+        revCloseList = copy.deepcopy(closeList)
+        revwcMap = copy.deepcopy(wcMap)
+        revCapacity = list(wCapacity)
+
+        forcloseIndex = randint(0,len(openList)-1)
+        foropenIndex  = randint(0,len(closeList)-1)
+        
+        forclose = openList[forcloseIndex]
+        foropen  = closeList[foropenIndex] 
+     
+        openMap[forclose] = False
+        openMap[foropen]  = True
+
+        for cust in wcMap[forclose]:
+            pickWarehouse(cust)
+        del wcMap[forclose]
+        
+        tempVal= calculate()
+        
+        if(tempVal< minVal):
+            print minVal
+            minVal=tempVal
+            minWc = copy.deepcopy(wcMap)
+        else:
+            openList = revOpenList
+            closeList = revCloseList
+            wcMap = revwcMap
+            wCapacity = revCapacity
+            openMap[forclose] = True
+            openMap[foropen]  = False
+    
+    wcMap = minWc 
+
+
 def pickCustomers(warehouse,fraction):
     
     global openMap
@@ -189,6 +243,7 @@ def solveIt(inputData):
 
     sortWarehousetoCust()
     greedy()
+    openCloseLoop()
     output = str(calculate())+" 0\n"
     output+= " ".join(map(str,formatList()))
     return output
