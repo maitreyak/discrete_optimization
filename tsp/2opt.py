@@ -108,6 +108,7 @@ def intersectEdge(edgeIndex):
         return -1
     else:
         #randomVal = edgeList[random.randint(0,len(edgeList)-1)]
+        #return randomVal
         actualval = pickEdge2(edgeIndex,edgeList)
         return actualval
     
@@ -142,14 +143,15 @@ def pickEdge2(edge1,edgeList):
                   
         edge2Values.append(calculatePath())
         visited = revertLocal[:]
-    
+    #returnEdge = random.randint(0,len(edge2Values)-1)
     returnEdge= min(range(len(edge2Values)),key = lambda index:edge2Values[index])
     return edgeList[returnEdge]
 
-def twoOptSwap(edge1,edge2):
+def twoOptSwap(edge1,edge2,count):
     global edges
     global visited
     global vistedMap
+    global minPathLenght 
     
     revertLocal = visited[:]
     
@@ -166,11 +168,19 @@ def twoOptSwap(edge1,edge2):
         index2-=1
         
     currentPathValue = calculatePath()
-        
-    if(currentPathValue >= minPathLenght):
-        visited = revertLocal
-        return False
-                    
+    
+    if(count > 1800):
+        if(currentPathValue > minPathLenght+20):
+            visited = revertLocal
+            return False
+    else:
+        if(currentPathValue > minPathLenght):
+            visited = revertLocal
+            return False
+
+
+
+                       
     for index in range(0,itemRange):
         visitedMap[visited[index]] = index
 
@@ -186,20 +196,22 @@ def twoOptSwap(edge1,edge2):
             edges.append([visited[index],visited[index+1]])
 
     #resortEdges()
+    if(currentPathValue < minPathLenght):
+        minPathLenght = calculatePath()
     return True
 
         
 def twoOpt():
     global edges
     global visited
-    count = 40000
+    count = 2000
     
     edge1 = getEdge()
     
     while count > 0:
         edge2 = intersectEdge(edge1)        
         if edge2 >= 0:    
-            twoOptSwap(edge1,edge2)
+            twoOptSwap(edge1,edge2,count)
         edge1 = getEdge()
         count-=1
         

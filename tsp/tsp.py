@@ -43,7 +43,7 @@ def nearestElement(node):
     global vistedMap
     #nearestElement.count= nearestElement.count+1
     #print nearestElement.count
-    k=10000
+    k=20000
     itemRange = len(points)
 
     xMean = xlist[xmap[node]]

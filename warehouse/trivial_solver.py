@@ -120,37 +120,45 @@ def openCloseLoop():
             openMap[w] = True 
         else:
             closeList.append(w)
-            openMap[w] = False 
-    for index in range(0,10000):    
-        revOpenList  = copy.deepcopy(openList)
-        revCloseList = copy.deepcopy(closeList)
-        revwcMap = copy.deepcopy(wcMap)
-        revCapacity = list(wCapacity)
+            openMap[w] = False
+    
+    element = openList.pop()
+    openMap[element] = False
+    openList.append(element)
+    
+    revwcMap = copy.deepcopy(wcMap)
+    
+    revCapacity = []
+    for i in range(0,warehouseCount):
+        revCapacity.append(warehouses[i][0])
+    
+    wCapacity = list(revCapacity)
 
-        forcloseIndex = randint(0,len(openList)-1)
-        foropenIndex  = randint(0,len(closeList)-1)
+    for index in range(0,50000):    
+        revOpenList  = list(openList)
+        revCloseList = list(closeList)
         
-        forclose = openList[forcloseIndex]
-        foropen  = closeList[foropenIndex] 
+        forclose = openList[randint(0,len(openList)-1)]
+        foropen  = closeList[randint(0,len(closeList)-1)] 
      
         openMap[forclose] = False
         openMap[foropen]  = True
-
-        for cust in wcMap[forclose]:
+                
+        wcMap= {}
+        
+        for cust in range(0,customerCount):
             pickWarehouse(cust)
-        del wcMap[forclose]
         
-        tempVal= calculate()
+        tempVal = calculate()
         
-        if(tempVal< minVal):
-            print minVal
+        if(tempVal < minVal):
             minVal=tempVal
             minWc = copy.deepcopy(wcMap)
         else:
             openList = revOpenList
             closeList = revCloseList
-            wcMap = revwcMap
-            wCapacity = revCapacity
+            wcMap = copy.deepcopy(revwcMap)
+            wCapacity = list(revCapacity)
             openMap[forclose] = True
             openMap[foropen]  = False
     

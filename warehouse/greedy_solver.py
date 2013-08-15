@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import copy
 warehouseCount = 0
 customerCount = 0
 warehouses = []
@@ -10,6 +11,7 @@ wCapacity =[]
 wCost = []
 wcMap = {}
 openMap = {}
+minObjective = 0.0
 
 def sortCustomerCosts():
     global sortedCosts
@@ -36,17 +38,66 @@ def pickWarehouse(customer):
                  wcMap[warehouse] = [customer]
             
             wCapacity[warehouse] -= customerSizes[customer]
-            return
-
+            return True
     
+    return False
 
 
 def greedy():
-    
+    global minObjective
     demandList = sorted(range(0,customerCount),key = lambda index:customerSizes[index],reverse = True)
     for index in demandList:
-        pickWarehouse(index)        
- 
+        pickWarehouse(index)
+    
+    minObjective = calculate()
+
+
+def shutdownW(warehouse):
+    global wcMap
+    global wCapacity
+    global minObjective
+    
+    localWcMap = copy.deepcopy(wcMap)
+    localWCapcity = copy.deepcopy(wCapacity)
+    
+    feasible = True
+    
+    if warehouse not in wcMap:
+        return False 
+    
+    openMap[warehouse] = False    
+    custList = wcMap[warehouse][:]
+    for cust in custList:
+        if pickWarehouse(cust) == False:
+            feasible = False
+            break
+    
+    if feasible == False:
+        wcMap = localWcMap
+        wCapacity = localWCapcity
+        openMap[warehouse] = True
+        return False
+    else:
+        wcMap[warehouse] = []
+        del wcMap[warehouse]
+        value = calculate()
+        if value >= minObjective:
+            wcMap = localWcMap
+            wCapacity = localWCapcity
+            openMap[warehouse] = True
+            return False
+        else:
+            minObjective = value
+            return True
+
+def closeAndMove():
+   # count = 10
+   # for index in range(0,count):
+    wlist= sorted(range(0,warehouseCount),key = lambda index:warehouses[index][1]/warehouses[index][0],reverse =True)    
+    for warehouse in wlist:
+        if openMap[warehouse] == True:
+            shutdownW(warehouse)
+
 
 def calculate():
     objectValue = 0.0
@@ -57,7 +108,6 @@ def calculate():
     return objectValue
 
 def formatList():
-    #print wCapacity
     returnList = [0] * customerCount
     for warehouse, custList in wcMap.items():
         for cust in custList:
@@ -103,6 +153,7 @@ def solveIt(inputData):
 
     sortCustomerCosts()
     greedy()
+    closeAndMove()
     output = str(calculate())+" 0\n"
     output+= " ".join(map(str,formatList()))
     return output
